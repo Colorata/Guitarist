@@ -50,6 +50,7 @@ import it.vfsfitvnm.innertube.models.NavigationEndpoint
 import it.vfsfitvnm.compose.routing.OnGlobalRoute
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
+import it.vfsfitvnm.vimusic.models.ui.toUiMedia
 import it.vfsfitvnm.vimusic.service.PlayerService
 import it.vfsfitvnm.vimusic.ui.components.BottomSheet
 import it.vfsfitvnm.vimusic.ui.components.BottomSheetState
@@ -272,12 +273,9 @@ fun Player(
 
         val controlsContent: @Composable (modifier: Modifier) -> Unit = { modifier ->
             Controls(
-                mediaId = mediaItem.mediaId,
-                title = mediaItem.mediaMetadata.title?.toString(),
-                artist = mediaItem.mediaMetadata.artist?.toString(),
+                media = mediaItem.toUiMedia(positionAndDuration.second),
                 shouldBePlaying = shouldBePlaying,
                 position = positionAndDuration.first,
-                duration = positionAndDuration.second,
                 modifier = modifier
             )
         }
@@ -295,13 +293,13 @@ fun Player(
                         .padding(bottom = 16.dp)
                 ) {
                     thumbnailContent(
-                        modifier = Modifier
+                        Modifier
                             .padding(horizontal = 16.dp)
                     )
                 }
 
                 controlsContent(
-                    modifier = Modifier
+                    Modifier
                         .padding(vertical = 8.dp)
                         .fillMaxHeight()
                         .weight(1f)
@@ -319,13 +317,13 @@ fun Player(
                         .weight(1.25f)
                 ) {
                     thumbnailContent(
-                        modifier = Modifier
+                        Modifier
                             .padding(horizontal = 32.dp, vertical = 8.dp)
                     )
                 }
 
                 controlsContent(
-                    modifier = Modifier
+                    Modifier
                         .padding(vertical = 8.dp)
                         .fillMaxWidth()
                         .weight(1f)
