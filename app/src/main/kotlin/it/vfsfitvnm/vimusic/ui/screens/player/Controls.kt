@@ -102,7 +102,7 @@ fun Controls(
             }, onSeekFinished = {
                 scrubbingPosition?.let(binder.player::seekTo)
                 scrubbingPosition = null
-            }, color = colorPalette.text, backgroundColor = colorPalette.background2, shape = RoundedCornerShape(8.dp)
+            }, color = colorPalette.text, isActive = binder.player.isPlaying, backgroundColor = colorPalette.background2, shape = RoundedCornerShape(8.dp)
         )
 
         Spacer(
