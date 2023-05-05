@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,23 +31,32 @@ import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
 import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 @Composable
 fun Controls(
     media: UiMedia, shouldBePlaying: Boolean, position: Long, modifier: Modifier = Modifier
 ) {
+    val scope = rememberCoroutineScope()
     val (colorPalette, typography) = LocalAppearance.current
 
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
 
+    val compositionLaunched = isCompositionLaunched()
     var trackLoopEnabled by rememberPreference(trackLoopEnabledKey, defaultValue = false)
 
-    var scrubbingPosition by remember(media.id) {
-        mutableStateOf<Long?>(null)
-    }
+    val animatedPosition = remember { Animatable(position.toFloat()) }
+    var isSeeking by remember { mutableStateOf(false) }
 
-    val durationVisible by remember(scrubbingPosition) { derivedStateOf { scrubbingPosition != null } }
+    LaunchedEffect(media) {
+        if (compositionLaunched) animatedPosition.animateTo(0f)
+    }
+    LaunchedEffect(position) {
+        if (!isSeeking && !animatedPosition.isRunning)
+            animatedPosition.animateTo(position.toFloat())
+    }
+    val durationVisible by remember(isSeeking) { derivedStateOf { isSeeking } }
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
@@ -89,21 +97,29 @@ fun Controls(
         )
 
         SeekBar(
-            position = scrubbingPosition ?: position,
-            range = 0..media.duration,
+            position = { animatedPosition.value },
+            range = 0f..media.duration.toFloat(),
             onSeekStarted = {
-                scrubbingPosition = it
+                isSeeking = true
+                scope.launch {
+                    animatedPosition.animateTo(it)
+                }
             },
             onSeek = { delta ->
-                scrubbingPosition = if (media.duration != C.TIME_UNSET) {
-                    scrubbingPosition?.plus(delta)?.coerceIn(0, media.duration)
-                } else {
-                    null
+                if (media.duration != C.TIME_UNSET) {
+                    isSeeking = true
+                    scope.launch {
+                        animatedPosition.snapTo(
+                            animatedPosition.value.plus(delta).coerceIn(0f, media.duration.toFloat())
+                        )
+                    }
                 }
             },
             onSeekFinished = {
-                scrubbingPosition?.let(binder.player::seekTo)
-                scrubbingPosition = null
+                isSeeking = false
+                animatedPosition.let {
+                    binder.player.seekTo(it.targetValue.toLong())
+                }
             },
             color = colorPalette.text,
             isActive = binder.player.isPlaying,
@@ -125,7 +141,7 @@ fun Controls(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 BasicText(
-                    text = formatAsDuration(scrubbingPosition ?: position),
+                    text = formatAsDuration(animatedPosition.value.toLong()),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

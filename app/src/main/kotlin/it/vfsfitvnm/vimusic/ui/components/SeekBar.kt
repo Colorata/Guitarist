@@ -32,14 +32,14 @@ import kotlin.math.sin
 
 @Composable
 fun SeekBar(
-    position: Long,
-    onSeek: (updated: Long) -> Unit,
+    position: () -> Float,
+    onSeek: (updated: Float) -> Unit,
     modifier: Modifier = Modifier,
-    onSeekStarted: (updated: Long) -> Unit = {},
+    onSeekStarted: (updated: Float) -> Unit = {},
     onSeekFinished: () -> Unit = {},
     color: Color,
     backgroundColor: Color = Color.Transparent,
-    range: ClosedRange<Long> = 0..100L,
+    range: ClosedRange<Float> = 0f..100f,
     isActive: Boolean = true,
     scrubberRadius: Dp = 6.dp,
     shape: Shape = RectangleShape,
@@ -58,26 +58,25 @@ fun SeekBar(
     Box(modifier = modifier.pointerInput(minimumValue, maximumValue) {
         if (maximumValue < minimumValue) return@pointerInput
 
-        detectDrags(isDragging, maximumValue, minimumValue, onSeek, position, onSeekFinished)
+        detectDrags(isDragging, maximumValue, minimumValue, onSeek, onSeekFinished)
     }.pointerInput(minimumValue, maximumValue) {
         detectTaps(maximumValue, minimumValue, onSeekStarted, onSeekFinished)
     }.padding(horizontal = scrubberRadius).drawWithContent {
         drawContent()
-        drawScrubber(range, position, color, currentScrubberHeight)
+        drawScrubber(range, position(), color, currentScrubberHeight)
     }
     ) {
         SeekBarContent(
-            backgroundColor, amplitude = { currentAmplitude }, position, minimumValue, maximumValue, shape, color
+            backgroundColor, amplitude = { currentAmplitude }, position(), minimumValue, maximumValue, shape, color
         )
     }
 }
 
 private suspend fun PointerInputScope.detectDrags(
     isDragging: MutableTransitionState<Boolean>,
-    maximumValue: Long,
-    minimumValue: Long,
-    onSeek: (delta: Long) -> Unit,
-    position: Long,
+    maximumValue: Float,
+    minimumValue: Float,
+    onSeek: (delta: Float) -> Unit,
     onSeekFinished: () -> Unit
 ) {
     var acc = 0f
@@ -88,8 +87,8 @@ private suspend fun PointerInputScope.detectDrags(
         acc += delta / size.width * (maximumValue - minimumValue)
 
         if (acc !in -1f..1f) {
-            onSeek(acc.toLong())
-            acc -= acc.toLong()
+            onSeek(acc)
+            acc -= acc
         }
     }, onDragEnd = {
         isDragging.targetState = false
@@ -104,13 +103,12 @@ private suspend fun PointerInputScope.detectDrags(
 }
 
 private suspend fun PointerInputScope.detectTaps(
-    maximumValue: Long, minimumValue: Long, onSeekStarted: (updated: Long) -> Unit, onSeekFinished: () -> Unit
+    maximumValue: Float, minimumValue: Float, onSeekStarted: (updated: Float) -> Unit, onSeekFinished: () -> Unit
 ) {
     if (maximumValue < minimumValue) return
 
     detectTapGestures(onPress = { offset ->
-        val updatedOffset = (offset.x / size.width * (maximumValue - minimumValue) + minimumValue).roundToLong()
-
+        val updatedOffset = (offset.x / size.width * (maximumValue - minimumValue) + minimumValue)
         onSeekStarted(updatedOffset)
     }, onTap = {
         onSeekFinished()
@@ -118,14 +116,14 @@ private suspend fun PointerInputScope.detectTaps(
 }
 
 private fun ContentDrawScope.drawScrubber(
-    range: ClosedRange<Long>, position: Long, color: Color, height: Dp
+    range: ClosedRange<Float>, position: Float, color: Color, height: Dp
 ) {
     val minimumValue = range.start
     val maximumValue = range.endInclusive
     val scrubberPosition = if (maximumValue < minimumValue) {
         0f
     } else {
-        (position.toFloat() - minimumValue) / (maximumValue - minimumValue) * size.width
+        (position - minimumValue) / (maximumValue - minimumValue) * size.width
     }
 
     drawRoundRect(
@@ -140,13 +138,13 @@ private fun ContentDrawScope.drawScrubber(
 private fun SeekBarContent(
     backgroundColor: Color,
     amplitude: () -> Dp,
-    position: Long,
-    minimumValue: Long,
-    maximumValue: Long,
+    position: Float,
+    minimumValue: Float,
+    maximumValue: Float,
     shape: Shape,
     color: Color
 ) {
-    val fraction = (position.toFloat() - minimumValue) / (maximumValue - minimumValue)
+    val fraction = (position - minimumValue) / (maximumValue - minimumValue)
     val progress by rememberInfiniteTransition().animateFloat(
         0f,
         1f,
