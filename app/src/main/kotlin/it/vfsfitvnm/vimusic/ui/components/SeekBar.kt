@@ -53,8 +53,7 @@ fun SeekBar(
     val transition = updateTransition(transitionState = isDragging, label = null)
 
     val currentAmplitude by transition.animateDp(label = "") { if (it || !isActive) 0.dp else 2.dp }
-    println(currentAmplitude)
-    val currentScrubberRadius by transition.animateDp(label = "") { if (it || isActive) 0.dp else scrubberRadius }
+    val currentScrubberHeight by transition.animateDp(label = "") { if (it) 20.dp else 15.dp }
 
     Box(modifier = modifier.pointerInput(minimumValue, maximumValue) {
         if (maximumValue < minimumValue) return@pointerInput
@@ -64,7 +63,7 @@ fun SeekBar(
         detectTaps(maximumValue, minimumValue, onSeekStarted, onSeekFinished)
     }.padding(horizontal = scrubberRadius).drawWithContent {
         drawContent()
-        drawScrubber(range, position, color, currentScrubberRadius)
+        drawScrubber(range, position, color, currentScrubberHeight)
     }
     ) {
         SeekBarContent(
@@ -119,7 +118,7 @@ private suspend fun PointerInputScope.detectTaps(
 }
 
 private fun ContentDrawScope.drawScrubber(
-    range: ClosedRange<Long>, position: Long, color: Color, radius: Dp
+    range: ClosedRange<Long>, position: Long, color: Color, height: Dp
 ) {
     val minimumValue = range.start
     val maximumValue = range.endInclusive
@@ -130,9 +129,9 @@ private fun ContentDrawScope.drawScrubber(
     }
 
     drawRoundRect(
-        color, topLeft = Offset(scrubberPosition - 5f, (size.height - 50f) / 2),
-        size = Size(10f, 50f),
-        cornerRadius = CornerRadius(radius.toPx())
+        color, topLeft = Offset(scrubberPosition - 5f, (size.height - height.toPx()) / 2),
+        size = Size(10f, height.toPx()),
+        cornerRadius = CornerRadius(5f)
     )
 }
 

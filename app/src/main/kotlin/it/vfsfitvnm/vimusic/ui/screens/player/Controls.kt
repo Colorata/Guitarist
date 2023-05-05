@@ -1,9 +1,7 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,6 +48,7 @@ fun Controls(
         mutableStateOf<Long?>(null)
     }
 
+    val durationVisible by remember(scrubbingPosition) { derivedStateOf { scrubbingPosition != null } }
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
@@ -93,41 +93,52 @@ fun Controls(
             range = 0..media.duration,
             onSeekStarted = {
                 scrubbingPosition = it
-            }, onSeek = { delta ->
+            },
+            onSeek = { delta ->
                 scrubbingPosition = if (media.duration != C.TIME_UNSET) {
                     scrubbingPosition?.plus(delta)?.coerceIn(0, media.duration)
                 } else {
                     null
                 }
-            }, onSeekFinished = {
+            },
+            onSeekFinished = {
                 scrubbingPosition?.let(binder.player::seekTo)
                 scrubbingPosition = null
-            }, color = colorPalette.text, isActive = binder.player.isPlaying, backgroundColor = colorPalette.background2, shape = RoundedCornerShape(8.dp)
+            },
+            color = colorPalette.text,
+            isActive = binder.player.isPlaying,
+            backgroundColor = colorPalette.background2,
+            shape = RoundedCornerShape(8.dp)
         )
+
 
         Spacer(
             modifier = Modifier.height(8.dp)
         )
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            BasicText(
-                text = formatAsDuration(scrubbingPosition ?: position),
-                style = typography.xxs.semiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            if (media.duration != C.TIME_UNSET) {
+        AnimatedVisibility(
+            durationVisible,
+            enter = fadeIn() + expandVertically { -it },
+            exit = fadeOut() + shrinkVertically { -it }) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 BasicText(
-                    text = formatAsDuration(media.duration),
+                    text = formatAsDuration(scrubbingPosition ?: position),
                     style = typography.xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+
+                if (media.duration != C.TIME_UNSET) {
+                    BasicText(
+                        text = formatAsDuration(media.duration),
+                        style = typography.xxs.semiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
 
