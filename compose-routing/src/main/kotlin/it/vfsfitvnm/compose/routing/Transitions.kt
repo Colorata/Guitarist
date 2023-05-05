@@ -1,12 +1,6 @@
 package it.vfsfitvnm.compose.routing
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.*
 
 @ExperimentalAnimationApi
 val defaultStacking = ContentTransform(
@@ -30,17 +24,17 @@ val defaultStill = ContentTransform(
 )
 
 @ExperimentalAnimationApi
-inline val AnimatedContentScope<RouteHandlerScope>.isStacking: Boolean
+val AnimatedContentTransitionScope<RouteHandlerScope>.isStacking: Boolean
     get() = initialState.route == null && targetState.route != null
 
 @ExperimentalAnimationApi
-inline val AnimatedContentScope<RouteHandlerScope>.isUnstacking: Boolean
+val AnimatedContentTransitionScope<RouteHandlerScope>.isUnstacking: Boolean
     get() = initialState.route != null && targetState.route == null
 
 @ExperimentalAnimationApi
-inline val AnimatedContentScope<RouteHandlerScope>.isStill: Boolean
+val AnimatedContentTransitionScope<RouteHandlerScope>.isStill: Boolean
     get() = initialState.route == null && targetState.route == null
 
 @ExperimentalAnimationApi
-inline val AnimatedContentScope<RouteHandlerScope>.isUnknown: Boolean
+val AnimatedContentTransitionScope<RouteHandlerScope>.isUnknown: Boolean
     get() = initialState.route != null && targetState.route != null

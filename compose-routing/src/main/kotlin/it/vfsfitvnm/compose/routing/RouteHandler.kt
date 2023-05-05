@@ -2,10 +2,7 @@ package it.vfsfitvnm.compose.routing
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +18,7 @@ fun RouteHandler(
     modifier: Modifier = Modifier,
     listenToGlobalEmitter: Boolean = false,
     handleBackPress: Boolean = true,
-    transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = {
+    transitionSpec: AnimatedContentTransitionScope<RouteHandlerScope>.() -> ContentTransform = {
         when {
             isStacking -> defaultStacking
             isStill -> defaultStill
@@ -33,6 +30,7 @@ fun RouteHandler(
     var route by rememberSaveable(stateSaver = Route.Saver) {
         mutableStateOf(null)
     }
+
 
     RouteHandler(
         route = route,
@@ -53,7 +51,7 @@ fun RouteHandler(
     modifier: Modifier = Modifier,
     listenToGlobalEmitter: Boolean = false,
     handleBackPress: Boolean = true,
-    transitionSpec: AnimatedContentScope<RouteHandlerScope>.() -> ContentTransform = {
+    transitionSpec: AnimatedContentTransitionScope<RouteHandlerScope>.() -> ContentTransform = {
         when {
             isStacking -> defaultStacking
             isStill -> defaultStill

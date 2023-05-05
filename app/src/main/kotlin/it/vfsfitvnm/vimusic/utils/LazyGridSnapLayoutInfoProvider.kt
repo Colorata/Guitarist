@@ -39,6 +39,14 @@ fun SnapLayoutInfoProvider(
 
     // Single page snapping is the default
     override fun Density.calculateApproachOffset(initialVelocity: Float): Float = 0f
+    override fun Density.calculateSnapStepSize(): Float =
+        with(layoutInfo) {
+            if (visibleItemsInfo.isNotEmpty()) {
+                visibleItemsInfo.fastSumBy { it.size.width } / visibleItemsInfo.size.toFloat()
+            } else {
+                0f
+            }
+        }
 
     override fun Density.calculateSnappingOffsetBounds(): ClosedFloatingPointRange<Float> {
         var lowerBoundOffset = Float.NEGATIVE_INFINITY
@@ -62,11 +70,4 @@ fun SnapLayoutInfoProvider(
         return lowerBoundOffset.rangeTo(upperBoundOffset)
     }
 
-    override fun Density.snapStepSize(): Float = with(layoutInfo) {
-        if (visibleItemsInfo.isNotEmpty()) {
-            visibleItemsInfo.fastSumBy { it.size.width } / visibleItemsInfo.size.toFloat()
-        } else {
-            0f
-        }
-    }
 }

@@ -45,4 +45,5 @@ android {
 dependencies {
     implementation(libs.compose.activity)
     implementation(libs.compose.foundation)
+    implementation(libs.compose.animation)
 }

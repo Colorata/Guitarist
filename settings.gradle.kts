@@ -11,16 +11,17 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.7.20")
+            version("kotlin", "1.8.21")
             plugin("kotlin-serialization","org.jetbrains.kotlin.plugin.serialization").versionRef("kotlin")
 
             library("kotlin-coroutines","org.jetbrains.kotlinx", "kotlinx-coroutines-core").version("1.6.4")
 
-            version("compose-compiler", "1.3.2")
+            version("compose-compiler", "1.4.7")
 
-            version("compose", "1.3.0-rc01")
+            version("compose", "1.5.0-alpha03")
             library("compose-foundation", "androidx.compose.foundation", "foundation").versionRef("compose")
             library("compose-ui", "androidx.compose.ui", "ui").versionRef("compose")
+            library("compose-animation", "androidx.compose.animation", "animation").versionRef("compose")
             library("compose-ui-util", "androidx.compose.ui", "ui-util").versionRef("compose")
             library("compose-ripple", "androidx.compose.material", "material-ripple").versionRef("compose")
 

@@ -1,13 +1,9 @@
 package it.vfsfitvnm.vimusic.ui.components.themed
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -47,8 +43,8 @@ fun Scaffold(
             targetState = tabIndex,
             transitionSpec = {
                 val slideDirection = when (targetState > initialState) {
-                    true -> AnimatedContentScope.SlideDirection.Up
-                    false -> AnimatedContentScope.SlideDirection.Down
+                    true -> AnimatedContentTransitionScope.SlideDirection.Up
+                    false -> AnimatedContentTransitionScope.SlideDirection.Down
                 }
 
                 val animationSpec = spring(
