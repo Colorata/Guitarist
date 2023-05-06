@@ -1,12 +1,12 @@
 package it.vfsfitvnm.vimusic.ui.screens.player
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -24,17 +26,15 @@ import androidx.media3.common.Player
 import it.vfsfitvnm.vimusic.Database
 import it.vfsfitvnm.vimusic.LocalPlayerServiceBinder
 import it.vfsfitvnm.vimusic.R
-import it.vfsfitvnm.vimusic.models.Song
 import it.vfsfitvnm.vimusic.models.ui.UiMedia
-import it.vfsfitvnm.vimusic.query
 import it.vfsfitvnm.vimusic.ui.components.SeekBar
 import it.vfsfitvnm.vimusic.ui.components.themed.BigIconButton
-import it.vfsfitvnm.vimusic.ui.components.themed.IconButton
 import it.vfsfitvnm.vimusic.ui.styling.LocalAppearance
-import it.vfsfitvnm.vimusic.ui.styling.favoritesIcon
 import it.vfsfitvnm.vimusic.utils.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+
+private const val FORWARD_BACKWARD_OFFSET = 16f
 
 @Composable
 fun Controls(
@@ -93,14 +93,6 @@ fun Controls(
         MediaInfo(media)
 
         Spacer(
-            modifier = Modifier.weight(0.5f)
-        )
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        Spacer(
             modifier = Modifier.weight(1f)
         )
 
@@ -114,7 +106,7 @@ fun Controls(
                 shouldBePlaying,
                 Modifier.height(controlHeight).weight(4f)
             )
-            BigIconButton(
+            SkipButton(
                 R.drawable.play_skip_forward,
                 onClick = binder.player::forceSeekToNext,
                 Modifier.weight(1f)
@@ -127,10 +119,11 @@ fun Controls(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            BigIconButton(
+            SkipButton(
                 R.drawable.play_skip_back,
                 onClick = binder.player::forceSeekToPrevious,
-                Modifier.weight(1f)
+                Modifier.weight(1f),
+                offsetOnPress = -FORWARD_BACKWARD_OFFSET
             )
 
 
@@ -207,6 +200,42 @@ fun Controls(
             modifier = Modifier.weight(1f)
         )
     }
+}
+
+@Composable
+private fun SkipButton(
+    @DrawableRes id: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    offsetOnPress: Float = FORWARD_BACKWARD_OFFSET
+) {
+    val scope = rememberCoroutineScope()
+    val offsetDp = remember { Animatable(0f) }
+    val density = LocalDensity.current
+    BigIconButton(
+        id,
+        onClick = {
+            onClick()
+            scope.launch {
+                offsetDp.animateTo(offsetOnPress)
+            }
+        },
+        modifier.graphicsLayer {
+            with(density) {
+                translationX = offsetDp.value.dp.toPx()
+            }
+        },
+        onPress = {
+            scope.launch {
+                offsetDp.animateTo(offsetOnPress)
+            }
+        },
+        onCancel = {
+            scope.launch {
+                offsetDp.animateTo(0f)
+            }
+        }
+    )
 }
 
 @Composable
