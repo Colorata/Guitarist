@@ -112,4 +112,7 @@ dependencies {
     implementation(projects.kugou)
 
     coreLibraryDesugaring(libs.desugaring)
+
+    implementation(project(":core:ui"))
+    implementation(project(":core:data"))
 }
